@@ -1,3 +1,6 @@
+/// add dotend
+import "dotenv/config";
+
 // 1. import
 import express from "express";
 // 2. import routes
@@ -15,7 +18,6 @@ app.get("/", (req, res) => {
 });
 // 4.1 use todo routes
 app.use("/todos", todoRoutes);
-
 // 5. start the server
 app.listen(5500, () => {
   console.log("Server is running on http://localhost:5500");
