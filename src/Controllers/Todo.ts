@@ -66,4 +66,43 @@ const DeleteTask = async (req: Request, res: Response) => {
   });
 };
 
-export { GetTasks, AddTask, DeleteTask };
+const UpdateTask = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  if (!id || isNaN(Number(id))) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid task ID",
+    });
+  }
+
+  if (!name) {
+    return res.status(400).json({
+      success: false,
+      message: "Task name is required",
+    });
+  }
+
+  const isExists = await db("Todo")
+    .where({ id: Number(id) })
+    .first();
+
+  if (!isExists) {
+    return res.status(404).json({
+      success: false,
+      message: "Task not found",
+    });
+  }
+
+  await db("Todo")
+    .where({ id: Number(id) })
+    .update({ name });
+
+  return res.json({
+    success: true,
+    message: "Task updated successfully",
+  });
+};
+
+export { GetTasks, AddTask, DeleteTask, UpdateTask };
