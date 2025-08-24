@@ -19,8 +19,8 @@ app.get("/", (req, res) => {
 // 4.1 use todo routes
 app.use("/todos", todoRoutes);
 // 5. start the server
-app.listen(5500, () => {
-  console.log("Server is running on http://localhost:5500");
+app.listen(5000, () => {
+  console.log("Server is running on http://localhost:5000");
 });
 
 // 6. export the app for testing
