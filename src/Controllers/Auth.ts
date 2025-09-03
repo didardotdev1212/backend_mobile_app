@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
+import * as jose from "jose";
 import db from "../libs/knexfile";
 import bcrypt from "bcryptjs";
-import * as jose from "jose";
 
 const register = async (req: Request, res: Response) => {
   try {
@@ -81,4 +81,20 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
-export { register, login };
+const profile = async (req: any, res: Response) => {
+  try {
+    const userId = req?.user.id;
+    const user = await db("users")
+      .select("id", "email")
+      .where({ id: userId })
+      .first();
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({ user });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export { register, login, profile };
