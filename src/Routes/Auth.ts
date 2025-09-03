@@ -8,6 +8,6 @@ const router = Router();
 router.post("/register", register);
 router.post("/login", login);
 router.get("/profile", authUser, profile);
-router.post("/profile-pic", authUser, upload.single("file"), AddProfilePic);
+router.post("/profile-pic", upload.single("file"), AddProfilePic);
 
 export default router;
