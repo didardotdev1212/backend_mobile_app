@@ -96,5 +96,11 @@ const profile = async (req: any, res: Response) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+const AddProfilePic = async (req: any, res: Response) => {
+  console.log(req.file);
+  // Here you would typically save the file information to the database
+  return res.status(200)
+  .json({ message: "Profile picture uploaded" });
+};
 
-export { register, login, profile };
+export { register, login, profile, AddProfilePic };
