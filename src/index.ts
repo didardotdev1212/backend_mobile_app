@@ -5,6 +5,7 @@ import express from "express";
 // 2. import routes
 import todoRoutes from "./Routes/Todo";
 import AuthRoutes from "./Routes/Auth";
+import CategoriesRouter from "./Routes/categories";
 
 // 2. create app
 const app = express();
@@ -17,6 +18,7 @@ app.get("/", (req, res) => {
 // 4.1 use todo routes
 app.use("/auth", AuthRoutes);
 app.use("/todos", todoRoutes);
+app.use("/categories", CategoriesRouter);
 // 5. start the server
 app.listen(5123, () => {
   console.log("Server is running on http://localhost:5000");

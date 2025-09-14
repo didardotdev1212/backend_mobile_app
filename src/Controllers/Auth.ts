@@ -35,7 +35,9 @@ const register = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     // insert user into database
     await db("users").insert({ email, password: hashedPassword });
-    return res.status(200).json({ message: "User registered successfully" });
+    return res
+      .status(200)
+      .json({ success: true, message: "User registered successfully" });
   } catch (error) {
     return res.status(500).json({ message: "Server Error" });
   }
@@ -91,7 +93,7 @@ const profile = async (req: any, res: Response) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    return res.status(200).json({ user });
+    return res.status(200).json({ success: true, data: user });
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
   }
@@ -99,8 +101,7 @@ const profile = async (req: any, res: Response) => {
 const AddProfilePic = async (req: any, res: Response) => {
   console.log(req.file);
   // Here you would typically save the file information to the database
-  return res.status(200)
-  .json({ message: "Profile picture uploaded" });
+  return res.status(200).json({ message: "Profile picture uploaded" });
 };
 
 export { register, login, profile, AddProfilePic };
