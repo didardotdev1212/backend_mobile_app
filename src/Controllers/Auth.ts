@@ -87,7 +87,7 @@ const profile = async (req: any, res: Response) => {
   try {
     const userId = req?.user.id;
     const user = await db("users")
-      .select("id", "email")
+      .select("id", "email", "FirstName", "LastName")
       .where({ id: userId })
       .first();
     if (!user) {
@@ -95,6 +95,7 @@ const profile = async (req: any, res: Response) => {
     }
     return res.status(200).json({ success: true, data: user });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Server error" });
   }
 };
