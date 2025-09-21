@@ -22,7 +22,7 @@ app.use("/todos", todoRoutes);
 app.use("/categories", CategoriesRouter);
 app.use("/books", BookdRouter);
 // 5. start the server
-app.listen(5123, () => {
+app.listen(5000, () => {
   console.log("Server is running on http://localhost:5000");
 });
 
