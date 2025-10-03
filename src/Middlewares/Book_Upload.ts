@@ -23,7 +23,7 @@ const upload = multer({
       const date = new Date().toISOString().split("T")[0];
       const prefix = `${date}-${Math.random().toString(36).substring(2, 15)}`;
       const originalname = file.originalname;
-      const key = `avatars/${prefix}-${originalname}`;
+      const key = `books/${prefix}-${originalname}`;
       cb(null, key);
     },
   }),
