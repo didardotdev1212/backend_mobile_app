@@ -10,7 +10,7 @@ const GetBookById = async (req: any, res: Response) => {
       .json({ success: false, message: "Book ID is required" });
   }
   try {
-    const book = await db("books")
+    let book = await db("books")
       .where("books.id", book_id) // use book_id to filter
       .select(
         "books.id",
@@ -34,6 +34,14 @@ const GetBookById = async (req: any, res: Response) => {
         .status(404)
         .json({ success: false, message: "Book not found" });
     }
+    /// get 5 latest reviews for this book
+    const reviews = await db("reviews")
+      .where("reviews.book_id", book_id)
+      .select("reviews.*", "users.FirstName", "users.LastName")
+      .leftJoin("users", "reviews.created_by", "users.id")
+      .orderBy("reviews.id", "desc")
+      .limit(5);
+    book.reviews = reviews; // add reviews to book object
 
     return res.status(200).json({ success: true, data: book });
   } catch (error) {
@@ -98,4 +106,57 @@ const CreateBook = async (req: any, res: Response) => {
   }
 };
 
-export { CreateBook, GetRecentBooks, GetBookById };
+const SubmitReview = async (req: any, res: Response) => {
+  try {
+    console.log("SubmitReview called");
+    const userid = req.user.id;
+    const { stars, review } = req.body;
+    const { book_id } = req.params;
+    if (!book_id || !stars || !review) {
+      return res.status(400).json({
+        success: false,
+        message: "Book ID and stars are required",
+      });
+    }
+    /// 0 to 5 stars
+    if (stars <= 0 || stars >= 5) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Stars must be between 0 and 5" });
+    }
+    /// check if book exists
+    const book = await db("books").where("id", book_id).first();
+    if (!book) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Book not found" });
+    }
+    /// check if already reviewed
+    const existingReview = await db("reviews")
+      .where({ book_id: book_id, created_by: userid })
+      .first();
+
+    if (existingReview) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already reviewed this book",
+      });
+    }
+    await db("reviews").insert({
+      book_id: book_id,
+      stars: stars,
+      review: review,
+      created_by: userid,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Review submitted successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export { CreateBook, GetRecentBooks, GetBookById, SubmitReview };
