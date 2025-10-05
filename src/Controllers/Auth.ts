@@ -100,8 +100,13 @@ const profile = async (req: any, res: Response) => {
   }
 };
 const AddProfilePic = async (req: any, res: Response) => {
-  console.log(req.file);
-  // Here you would typically save the file information to the database
+  const userId = req.user.id;
+  const profile = await db("users").where({ id: userId }).first();
+  /// save file path to database
+  const file = req.file;
+  const fileUrl = `https://pub-8b2d28096f434a889120e98b6606a84e.r2.dev/${file.key}`;
+
+  await db("users").where({ id: userId }).update({ avatar: fileUrl });
   return res.status(200).json({ message: "Profile picture uploaded" });
 };
 

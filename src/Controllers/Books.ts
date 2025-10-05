@@ -87,7 +87,10 @@ const CreateBook = async (req: any, res: Response) => {
         .json({ success: false, message: "Name is required" });
     }
     const userid = req.user.id;
-    const imageurl = req.file ? req.file.path : null;
+    const file = req.file;
+    /// pub-8b2d28096f434a889120e98b6606a84e witll be YOUR R2 DEVELOPMENT URL
+    const imageurl = `https://pub-8b2d28096f434a889120e98b6606a84e.r2.dev/${file.key}`;
+
     await db("books").insert({
       Name: Name,
       Descreption: Descreption,
