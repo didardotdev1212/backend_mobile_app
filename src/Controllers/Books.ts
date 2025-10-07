@@ -15,7 +15,7 @@ const GetBookById = async (req: any, res: Response) => {
       .select(
         "books.id",
         "books.Name",
-        "books.Descreption",
+        "books.Description",
         "books.Image",
         "books.created_at",
         "books.created_by",
@@ -56,7 +56,7 @@ const GetRecentBooks = async (req: any, res: Response) => {
       .select(
         "books.id",
         "books.Name",
-        "books.Descreption",
+        "books.Description",
         "books.Image",
         "books.created_at",
         "books.created_by",
@@ -79,7 +79,7 @@ const GetRecentBooks = async (req: any, res: Response) => {
 
 const CreateBook = async (req: any, res: Response) => {
   try {
-    const { Name, Descreption, category_id } = req.body;
+    const { Name, Description, category_id } = req.body;
 
     if (!Name) {
       return res
@@ -88,12 +88,10 @@ const CreateBook = async (req: any, res: Response) => {
     }
     const userid = req.user.id;
     const file = req.file;
-    /// pub-8b2d28096f434a889120e98b6606a84e witll be YOUR R2 DEVELOPMENT URL
     const imageurl = `https://pub-8b2d28096f434a889120e98b6606a84e.r2.dev/${file.key}`;
-
     await db("books").insert({
       Name: Name,
-      Descreption: Descreption,
+      Description: Description,
       category_id: category_id,
       Image: imageurl,
       created_by: userid,
@@ -115,14 +113,14 @@ const SubmitReview = async (req: any, res: Response) => {
     const userid = req.user.id;
     const { stars, review } = req.body;
     const { book_id } = req.params;
-    if (!book_id || !stars || !review) {
+    if (!book_id || !review) {
       return res.status(400).json({
         success: false,
         message: "Book ID and stars are required",
       });
     }
     /// 0 to 5 stars
-    if (stars <= 0 || stars >= 5) {
+    if (stars && (stars <= 0 || stars > 6)) {
       return res
         .status(400)
         .json({ success: false, message: "Stars must be between 0 and 5" });
@@ -147,7 +145,7 @@ const SubmitReview = async (req: any, res: Response) => {
     }
     await db("reviews").insert({
       book_id: book_id,
-      stars: stars,
+      stars: stars ? stars : 0,
       review: review,
       created_by: userid,
     });
@@ -161,5 +159,90 @@ const SubmitReview = async (req: any, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+const DeleteBook = async (req: any, res: Response) => {
+  try {
+    const { book_id } = req.params;
+    const user_id = req.user.id;
+    if (!book_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Book ID is required" });
+    }
+    const book = await db("books").where("id", book_id).first();
+    if (!book) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Book not found" });
+    }
+    if (book.created_by !== user_id) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to delete this book",
+      });
+    }
+    await db("books").where("id", book_id).del();
+    await db("reviews").where("book_id", book_id).del();
+    return res
+      .status(200)
+      .json({ success: true, message: "Book deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
-export { CreateBook, GetRecentBooks, GetBookById, SubmitReview };
+const EditBook = async (req: any, res: Response) => {
+  try {
+    const { book_id } = req.params;
+    const { Name, Description, category_id } = req.body;
+
+    if (!Name) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Name is required" });
+    }
+
+    const userid = req.user.id;
+
+    const book = await db("books").where("id", book_id).first();
+    if (!book) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Book not found" });
+    }
+    if (book.created_by !== userid) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to edit this book",
+      });
+    }
+
+    const file = req.file;
+    const imageurl = `https://pub-8b2d28096f434a889120e98b6606a84e.r2.dev/${file?.key}`;
+    await db("books")
+      .where("id", book_id)
+      .update({
+        Name: Name,
+        Description: Description,
+        category_id: category_id,
+        Image: file ? imageurl : book.Image,
+        created_by: userid,
+        created_at: new Date(),
+      });
+    return res.status(201).json({
+      success: true,
+      message: "Book updated successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+export {
+  CreateBook,
+  GetRecentBooks,
+  GetBookById,
+  SubmitReview,
+  DeleteBook,
+  EditBook,
+};
